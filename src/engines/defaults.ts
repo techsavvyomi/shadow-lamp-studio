@@ -1,4 +1,4 @@
-import type { DesignConfig, LampDimensions, LightConfig, MountingConfig, PrintConfig, ProcessingParams, ProjectionConfig } from '@/types';
+import type { DesignConfig, LampDimensions, LightConfig, MountingConfig, PlateDecoration, PrintConfig, ProcessingParams, ProjectionConfig } from '@/types';
 
 export const DEFAULT_PROCESSING: ProcessingParams = {
   mode: 'auto',
@@ -27,6 +27,7 @@ export const DEFAULT_LAMP: LampDimensions = {
   topVents: true,
   frameMargin: 6,
   lipHeight: 3,
+  fingerJoints: true,
 };
 
 export const DEFAULT_LIGHT: LightConfig = {
@@ -62,7 +63,7 @@ export const DEFAULT_PRINT: PrintConfig = {
   infill: 100,
   orientation: 'outer-down',
   supports: 'none',
-  minFeature: 0.8,
+  minFeature: 1.2, // three lines of a 0.4 mm nozzle
   clearance: 0.2,
 };
 
@@ -75,6 +76,16 @@ export const DEFAULT_MOUNTING: MountingConfig = {
   screwShank: 3.5,
 };
 
+export const DEFAULT_DECORATION: PlateDecoration = {
+  kind: 'none',
+  icon: 'figure',
+  text: 'Boo!',
+  font: 'bold',
+  position: 'below',
+  size: 0.9,
+  height: 1.5,
+};
+
 export const DEFAULT_DESIGN: DesignConfig = {
   processing: DEFAULT_PROCESSING,
   lamp: DEFAULT_LAMP,
@@ -82,6 +93,7 @@ export const DEFAULT_DESIGN: DesignConfig = {
   projection: DEFAULT_PROJECTION,
   print: DEFAULT_PRINT,
   mounting: DEFAULT_MOUNTING,
+  decoration: DEFAULT_DECORATION,
 };
 
 /**
@@ -100,7 +112,7 @@ export const LIMITS = {
   width: [50, 300],
   depth: [50, 300],
   height: [50, 300],
-  wallThickness: [0.8, 5],
+  wallThickness: [1, 5],
   baseThickness: [2, 10],
   topThickness: [1.2, 6],
   frameMargin: [2, 30],
@@ -122,4 +134,6 @@ export const LIMITS = {
   nozzle: [0.1, 1.2],
   layerHeight: [0.02, 0.6],
   infill: [10, 100],
+  decorationSize: [0.2, 1],
+  reliefHeight: [0.6, 4],
 } as const satisfies Record<string, readonly [number, number]>;

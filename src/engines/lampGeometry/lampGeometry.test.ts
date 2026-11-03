@@ -90,7 +90,11 @@ describe('lamp generation', () => {
     for (const id of ['back', 'left', 'right'] as const) {
       expect(r.drawings[id].holesInner).toHaveLength(0);
       const v = r.validation.find((x) => x.partId === id)!;
-      expect(v.volume).toBeCloseTo(r.panels[id].width * r.panels[id].height * r.panels[id].thickness, 0);
+      const pa = r.panels[id];
+      // solid slab plus its finger-joint tabs (rectangles below the bottom edge)
+      const tabArea = r.drawings[id].tabs.reduce((a, t) => a + (t[1][0] - t[0][0]) * (t[2][1] - t[1][1]), 0);
+      expect(tabArea).toBeGreaterThan(0);
+      expect(v.volume).toBeCloseTo((pa.width * pa.height + tabArea) * pa.thickness, 0);
     }
   });
 

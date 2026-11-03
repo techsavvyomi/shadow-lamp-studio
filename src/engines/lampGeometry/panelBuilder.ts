@@ -69,7 +69,7 @@ export function buildPanel(input: PanelBuildInput, scope: Scope): PanelBuildOutp
   });
   const analysis = emptyAnalysis(frame, input.active, a);
   const findings: Finding[] = analysis.findings;
-  const drawing: PanelDrawing = { width: w, height: h, holesInner: [], holesOuter: [], bridges: [], window: [], lightFoot: foot };
+  const drawing: PanelDrawing = { width: w, height: h, holesInner: [], holesOuter: [], bridges: [], window: [], lightFoot: foot, tabs: [] };
 
   const finish = (holes: CrossSection | null): PanelBuildOutput => {
     const cut = perspectiveCut(wasm, frame, light, holes, h, scope);

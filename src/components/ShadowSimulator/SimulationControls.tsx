@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, Link2, Link2Off, Power, RotateCcw } from 'lucide-react';
-import { NumberField, SelectField, ToggleField } from '@/components/common/Fields';
+import { ExpertOnly, NumberField, SelectField, ToggleField } from '@/components/common/Fields';
 import { Button, Tip } from '@/components/ui/primitives';
 import { useDesignStore } from '@/stores/designStore';
 import { useGeometryStore } from '@/stores/geometryStore';
@@ -16,7 +16,8 @@ export function SimulationControls() {
   const design = useDesignStore((s) => s.design);
   const result = useGeometryStore((s) => s.result);
   const set = (p: Partial<SimulationSettings>) => useViewStore.getState().setSim(p);
-  const [open, setOpen] = useState(true);
+  // guided mode starts with just the LED switch and the two readouts
+  const [open, setOpen] = useState(() => useViewStore.getState().uiMode === 'advanced');
 
   const wall = design.mounting.type === 'wall';
   const flux = sim.linked ? design.light.flux : sim.flux;
@@ -65,9 +66,7 @@ export function SimulationControls() {
           <ChevronDown className={cn('transition-transform', !open && '-rotate-90')} />
         </Button>
       </div>
-      {open && (
-        <div className="max-h-[calc(100vh-260px)] space-y-3 overflow-y-auto px-3 py-3">
-          <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+      <div className="grid grid-cols-2 gap-1.5 px-3 pt-3 text-[10.5px]">
             <div className="rounded-md bg-ink-800 px-2 py-1">
               <div className="text-ink-400">{wall ? 'Halo at 30 cm' : 'Wall centre'}</div>
               <div className="num text-[12px] text-ink-100">{sim.ledOn ? centreLux.toFixed(0) : 0} lx</div>
@@ -76,7 +75,10 @@ export function SimulationControls() {
               <div className="text-ink-400">Edge blur</div>
               <div className="num text-[12px] text-ink-100">{blurText}</div>
             </div>
-          </div>
+      </div>
+      {!open && <div className="h-3" />}
+      {open && (
+        <div className="max-h-[calc(100vh-300px)] space-y-3 overflow-y-auto px-3 py-3">
           {!wall && Math.abs(sim.wallDistance - designDist) > 1 && (
             <p className="text-[10.5px] leading-snug text-warn">Wall is at {sim.wallDistance} mm but the panels were designed for {designDist} mm — the image scales and blurs accordingly.</p>
           )}
@@ -94,6 +96,7 @@ export function SimulationControls() {
           />}
           {!wall && sim.room === 'single' && <NumberField label="Wall orientation" value={sim.wallYaw} min={-60} max={60} unit="°" onChange={(v) => set({ wallYaw: v })} />}
           <NumberField label={wall ? 'Rotate on the wall' : 'Rotate lamp'} value={sim.lampYaw} min={-180} max={180} unit="°" onChange={(v) => set({ lampYaw: v })} />
+          <ExpertOnly>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[11.5px] font-medium text-ink-300">Light position offset</span>
@@ -118,6 +121,7 @@ export function SimulationControls() {
               />
             ))}
           </div>
+          </ExpertOnly>
           <div className="space-y-1">
             <div className="text-[11.5px] font-medium text-ink-300">Wall colour</div>
             <div className="flex gap-1.5">
@@ -132,6 +136,7 @@ export function SimulationControls() {
               ))}
             </div>
           </div>
+          <ExpertOnly>
           <NumberField label="Room brightness" value={sim.ambient} min={0} max={80} step={0.5} unit="lx" onChange={(v) => set({ ambient: v })} />
           <NumberField label="Exposure" value={sim.exposure} min={0.1} max={6} step={0.05} onChange={(v) => set({ exposure: v })} />
           <SelectField
@@ -145,6 +150,7 @@ export function SimulationControls() {
             ]}
           />
           <ToggleField label="Show light rays" checked={sim.showRays} onChange={(v) => set({ showRays: v })} />
+          </ExpertOnly>
         </div>
       )}
     </div>

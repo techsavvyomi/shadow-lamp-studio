@@ -174,7 +174,7 @@ export function SceneViewer() {
   const mode = useViewStore((s) => s.mode);
   const controlsRef = useRef<OrbitControlsImpl>(null);
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(ellipse_at_50%_35%,#161b25_0%,#0b0d12_70%)]">
+    <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(ellipse_at_50%_35%,#161b25_0%,#0b0d12_70%)]" data-tour="viewer">
       <ErrorBoundary fallback={(error, reset) => <SceneError error={error} reset={reset} />}>
       <Canvas
         dpr={[1, 2]}

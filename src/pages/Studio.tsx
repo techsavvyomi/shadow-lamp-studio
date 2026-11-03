@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { ExportDialog } from '@/components/ExportPanel/ExportPanel';
+import { Walkthrough } from '@/components/Guide/Walkthrough';
 import { BottomToolbar } from '@/components/layout/BottomToolbar';
 import { LeftSidebar, RightSidebar } from '@/components/layout/Sidebars';
 import { TopBar } from '@/components/layout/TopBar';
@@ -7,7 +8,7 @@ import { SceneViewer } from '@/components/SceneViewer/SceneViewer';
 import { TooltipProvider } from '@/components/ui/primitives';
 import { useGeometryGeneration, useImageProcessing } from '@/hooks/usePipeline';
 import { useDesignStore } from '@/stores/designStore';
-import { useViewStore } from '@/stores/viewStore';
+import { tourSeen, useViewStore } from '@/stores/viewStore';
 
 /** Keeps the simulated room in step with the design target while linked. */
 function useSimulationLink() {
@@ -49,6 +50,7 @@ export function Studio() {
       useViewStore.getState().setLeftOpen(false);
       useViewStore.getState().setRightOpen(false);
     }
+    if (!tourSeen()) useViewStore.getState().startTour();
   }, []);
   return (
     <TooltipProvider>
@@ -63,6 +65,7 @@ export function Studio() {
         </div>
         <BottomToolbar />
         <ExportDialog />
+        <Walkthrough />
       </div>
     </TooltipProvider>
   );

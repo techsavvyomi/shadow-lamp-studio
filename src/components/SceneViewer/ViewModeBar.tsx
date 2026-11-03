@@ -26,15 +26,19 @@ export function ViewModeBar() {
   const mode = useViewStore((s) => s.mode);
   const visible = useViewStore((s) => s.visible);
   const material = useViewStore((s) => s.material);
+  const guided = useViewStore((s) => s.uiMode === 'guide');
+  // guided mode keeps the three views a first lamp needs
+  const modes = guided ? MODES.filter((m) => m.id === 'assembled' || m.id === 'exploded' || m.id === 'simulation' || m.id === mode) : MODES;
   return (
     <div className="pointer-events-none absolute inset-x-0 top-3 flex items-start justify-center gap-2 px-3">
       <ToggleGroup
+        data-tour="views"
         type="single"
         value={mode}
         onValueChange={(v) => v && useViewStore.getState().setMode(v as ViewMode)}
         className="pointer-events-auto w-auto border-ink-600/80 bg-ink-850/85 shadow-xl shadow-black/40 backdrop-blur"
       >
-        {MODES.map((m) => (
+        {modes.map((m) => (
           <Tip key={m.id} content={m.hint} side="bottom">
             <ToggleGroupItem value={m.id} className={cn('px-2.5 py-1.5', m.id === 'simulation' && 'data-[state=on]:bg-glow-500/20')}>
               <m.icon />

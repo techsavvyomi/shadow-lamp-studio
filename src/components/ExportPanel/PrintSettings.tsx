@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
-import { NumberField, SelectField, SubHeading } from '@/components/common/Fields';
+import { ExpertOnly, NumberField, SelectField, SubHeading } from '@/components/common/Fields';
 import { LIMITS } from '@/engines/defaults';
 import { printRecommendations, recommendedClearance, recommendedMinFeature } from '@/engines/printing/recommendations';
 import { useDesignStore } from '@/stores/designStore';
@@ -42,6 +42,7 @@ export function PrintSettings() {
         <NumberField label="Nozzle diameter" value={p.nozzle} min={LIMITS.nozzle[0]} max={LIMITS.nozzle[1]} step={0.05} unit="mm" onChange={(nozzle) => up({ nozzle, minFeature: recommendedMinFeature({ printer: p.printer, nozzle }) })} />
       )}
       <NumberField label="Layer height" value={p.layerHeight} min={LIMITS.layerHeight[0]} max={LIMITS.layerHeight[1]} step={0.01} unit="mm" onChange={(layerHeight) => up({ layerHeight })} />
+      <ExpertOnly>
       {p.printer === 'FDM' && <NumberField label="Infill" value={p.infill} min={LIMITS.infill[0]} max={LIMITS.infill[1]} step={5} unit="%" onChange={(infill) => up({ infill })} />}
       <SelectField
         label="Panel print orientation"
@@ -74,6 +75,7 @@ export function PrintSettings() {
         help="Thinnest wall, gap or bridge the generator will produce. Regenerates the panels."
       />
       <NumberField label="Assembly clearance" value={p.clearance} min={LIMITS.clearance[0]} max={LIMITS.clearance[1]} step={0.05} unit="mm" onChange={(clearance) => up({ clearance })} />
+      </ExpertOnly>
 
       <SubHeading>Recommendations</SubHeading>
       <ul className="space-y-2">

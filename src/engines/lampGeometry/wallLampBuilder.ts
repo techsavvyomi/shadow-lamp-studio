@@ -147,7 +147,7 @@ export function buildWallPanels(input: WallLampInput, scope: Scope): WallLampOut
       const a = -l[2];
       const active = projection.activePanels[id];
       const analysis = emptyAnalysis(f, active, a, hSlab);
-      const drawing: PanelDrawing = { width: w, height: hSlab, holesInner: [], holesOuter: [], bridges: [], window: [rectLoop(0, 0, w, hSlab)], lightFoot: [l[0], l[1]] };
+      const drawing: PanelDrawing = { width: w, height: hSlab, holesInner: [], holesOuter: [], bridges: [], window: [rectLoop(0, 0, w, hSlab)], lightFoot: [l[0], l[1]], tabs: [] };
       const slabRect = local.keep(new CrossSection([rectLoop(0, 0, w, hSlab)], 'Positive'));
       // Material is built slightly past the slab's edges so the ray-aligned cutter
       // crosses the end/bottom faces transversally instead of grazing them (which

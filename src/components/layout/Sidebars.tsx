@@ -1,4 +1,6 @@
-import { Box, Frame, ImageUp, Lightbulb, Printer, Scan, ScanSearch, Share, Sun } from 'lucide-react';
+import { ArrowLeft, Box, Frame, ImageUp, Lightbulb, PanelTop, Printer, Scan, ScanSearch, Share, Sun } from 'lucide-react';
+import { GuidePanel } from '@/components/Guide/GuidePanel';
+import { DecorationPanel } from '@/components/LampConfigurator/DecorationPanel';
 import { ImageUploader } from '@/components/ImageUploader/ImageUploader';
 import { SilhouetteEditor } from '@/components/SilhouetteEditor/SilhouetteEditor';
 import { LampDimensionsPanel, LightPanel, ProjectionPanel } from '@/components/LampConfigurator/LampConfigurator';
@@ -7,14 +9,14 @@ import { useDesignStore } from '@/stores/designStore';
 import { GeometryInspector } from '@/components/GeometryInspector/GeometryInspector';
 import { PrintSettings } from '@/components/ExportPanel/PrintSettings';
 import { ExportPanel } from '@/components/ExportPanel/ExportPanel';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/primitives';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge, Button, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/primitives';
 import { useSilhouetteData } from '@/hooks/usePipeline';
 import { useGeometryStore } from '@/stores/geometryStore';
 import { useImageStore } from '@/stores/imageStore';
 import { useViewStore, type LeftSection, type RightTab } from '@/stores/viewStore';
 import { cn } from '@/utils';
 
-function Drawer({ side, open, children }: { side: 'left' | 'right'; open: boolean; children: React.ReactNode }) {
+function Drawer({ side, open, tour, children }: { side: 'left' | 'right'; open: boolean; tour?: string; children: React.ReactNode }) {
   const close = () => (side === 'left' ? useViewStore.getState().setLeftOpen(false) : useViewStore.getState().setRightOpen(false));
   return (
     <>
@@ -28,6 +30,7 @@ function Drawer({ side, open, children }: { side: 'left' | 'right'; open: boolea
           open ? 'translate-x-0' : side === 'left' ? '-translate-x-full lg:-ml-[320px]' : 'translate-x-full lg:-mr-[348px]',
         )}
         aria-hidden={!open}
+        data-tour={tour}
       >
         {children}
       </aside>
@@ -41,12 +44,36 @@ export function LeftSidebar() {
   const source = useImageStore((s) => s.source);
   const silhouette = useSilhouetteData();
   const mounting = useDesignStore((s) => s.design.mounting.type);
+  const decoration = useDesignStore((s) => s.design.decoration.kind);
+  const uiMode = useViewStore((s) => s.uiMode);
+  const expert = useViewStore((s) => s.expert);
   const onChange = (v: string[]) => {
     useViewStore.getState().setLeftSection(v as LeftSection[]);
-    if (v.some((s) => s === 'mounting' || s === 'lamp' || s === 'projection' || s === 'light')) useViewStore.getState().markVisited('configure');
+    if (v.some((s) => s === 'mounting' || s === 'plate' || s === 'lamp' || s === 'projection' || s === 'light')) useViewStore.getState().markVisited('customise');
   };
+  if (uiMode === 'guide')
+    return (
+      <Drawer side="left" open={open} tour="guide">
+        <GuidePanel />
+      </Drawer>
+    );
   return (
-    <Drawer side="left" open={open}>
+    <Drawer side="left" open={open} tour="guide">
+      <div className="space-y-1.5 border-b border-ink-700 px-3 py-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">All settings</span>
+          <Button variant="ghost" size="sm" onClick={() => useViewStore.getState().setUiMode('guide')}>
+            <ArrowLeft /> Guided mode
+          </Button>
+        </div>
+        <label className="flex cursor-pointer items-center justify-between rounded-md bg-ink-800/60 px-2.5 py-1.5">
+          <span>
+            <span className="block text-[11.5px] font-medium text-ink-200">Expert options</span>
+            <span className="block text-[10.5px] text-ink-400">{expert ? 'Every tolerance and fine-tuning control' : 'Off: only the settings most lamps need'}</span>
+          </span>
+          <Switch checked={expert} onCheckedChange={(v) => useViewStore.getState().setExpert(v)} aria-label="Expert options" />
+        </label>
+      </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Accordion type="multiple" value={sections} onValueChange={onChange}>
           <AccordionItem value="image">
@@ -73,6 +100,16 @@ export function LeftSidebar() {
               <MountingPanel />
             </AccordionContent>
           </AccordionItem>
+          {mounting === 'wall' && (
+            <AccordionItem value="plate">
+              <AccordionTrigger icon={<PanelTop />} badge={<Badge tone="glow">{decoration === 'none' ? 'plain' : decoration}</Badge>}>
+                Wall plate
+              </AccordionTrigger>
+              <AccordionContent>
+                <DecorationPanel advanced />
+              </AccordionContent>
+            </AccordionItem>
+          )}
           <AccordionItem value="lamp">
             <AccordionTrigger icon={<Box />}>Lamp dimensions</AccordionTrigger>
             <AccordionContent>

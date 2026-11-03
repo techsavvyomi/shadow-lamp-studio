@@ -3,8 +3,29 @@ import type { PanelId, PartId, Vec3 } from '@/types';
 
 export type ViewMode = 'assembled' | 'exploded' | 'internal' | 'panels' | 'simulation';
 export type MaterialPreset = 'matte-white' | 'matte-black' | 'wood' | 'silk-gold' | 'grey-resin';
-export type LeftSection = 'image' | 'silhouette' | 'mounting' | 'lamp' | 'projection' | 'light';
+export type LeftSection = 'image' | 'silhouette' | 'mounting' | 'plate' | 'lamp' | 'projection' | 'light';
 export type RightTab = 'inspect' | 'print' | 'export';
+/** guide: one step at a time with the essential controls; advanced: every setting. */
+export type UiMode = 'guide' | 'advanced';
+export type GuideStepId = 'type' | 'picture' | 'silhouette' | 'customise' | 'preview' | 'export';
+export const GUIDE_STEP_IDS: GuideStepId[] = ['type', 'picture', 'silhouette', 'customise', 'preview', 'export'];
+
+const TOUR_KEY = 'giftieverse.studio.tour.v1';
+/** True once the first-visit walkthrough was finished or skipped on this browser. */
+export const tourSeen = () => {
+  try {
+    return localStorage.getItem(TOUR_KEY) === 'done';
+  } catch {
+    return true;
+  }
+};
+const rememberTour = () => {
+  try {
+    localStorage.setItem(TOUR_KEY, 'done');
+  } catch {
+    /* private mode: the tour simply shows again next time */
+  }
+};
 
 export interface SimulationSettings {
   ledOn: boolean;
@@ -47,7 +68,13 @@ interface ViewState {
   leftSection: LeftSection[];
   rightTab: RightTab;
   exportOpen: boolean;
-  visited: Partial<Record<'configure' | 'preview' | 'export', boolean>>;
+  visited: Partial<Record<GuideStepId, boolean>>;
+  uiMode: UiMode;
+  /** All settings: also show fine-tuning options (off = everyday settings only). */
+  expert: boolean;
+  guideStep: GuideStepId;
+  /** Index into the walkthrough, or null when it is not showing. */
+  tourStep: number | null;
   setMode: (m: ViewMode) => void;
   toggleVisible: (p: PartId) => void;
   setMaterial: (m: MaterialPreset) => void;
@@ -59,7 +86,13 @@ interface ViewState {
   setLeftSection: (s: LeftSection[]) => void;
   setRightTab: (t: RightTab) => void;
   setExportOpen: (v: boolean) => void;
-  markVisited: (k: 'configure' | 'preview' | 'export') => void;
+  markVisited: (k: GuideStepId) => void;
+  setUiMode: (m: UiMode) => void;
+  setExpert: (v: boolean) => void;
+  setGuideStep: (s: GuideStepId) => void;
+  startTour: () => void;
+  setTourStep: (i: number) => void;
+  endTour: () => void;
 }
 
 export const useViewStore = create<ViewState>((set) => ({
@@ -86,11 +119,15 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   resetToken: 0,
   leftOpen: true,
-  rightOpen: true,
+  rightOpen: false,
   leftSection: ['image', 'mounting'],
   rightTab: 'inspect',
   exportOpen: false,
   visited: {},
+  uiMode: 'guide',
+  expert: false,
+  guideStep: 'type',
+  tourStep: null,
   setMode: (mode) =>
     set((s) => ({ mode, visited: mode === 'simulation' ? { ...s.visited, preview: true } : s.visited })),
   toggleVisible: (p) => set((s) => ({ visible: { ...s.visible, [p]: !s.visible[p] } })),
@@ -104,4 +141,18 @@ export const useViewStore = create<ViewState>((set) => ({
   setRightTab: (rightTab) => set({ rightTab }),
   setExportOpen: (exportOpen) => set((s) => ({ exportOpen, visited: exportOpen ? { ...s.visited, export: true } : s.visited })),
   markVisited: (k) => set((s) => ({ visited: { ...s.visited, [k]: true } })),
+  setUiMode: (uiMode) => set({ uiMode, rightOpen: uiMode === 'advanced' && typeof window !== 'undefined' && window.innerWidth >= 1024 }),
+  setExpert: (expert) => set({ expert }),
+  setGuideStep: (guideStep) =>
+    set((s) => {
+      // leaving a step counts as having seen it; arriving at preview lights the lamp
+      const visited = { ...s.visited, [s.guideStep]: true, ...(guideStep === 'customise' ? { customise: true } : {}) };
+      return guideStep === 'preview' ? { guideStep, visited: { ...visited, preview: true }, mode: 'simulation' as ViewMode, sim: { ...s.sim, ledOn: true } } : { guideStep, visited };
+    }),
+  startTour: () => set({ tourStep: 0 }),
+  setTourStep: (tourStep) => set({ tourStep }),
+  endTour: () => {
+    rememberTour();
+    set({ tourStep: null });
+  },
 }));

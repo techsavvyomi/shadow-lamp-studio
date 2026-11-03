@@ -1,6 +1,7 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
 import { Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Switch, Tip } from '@/components/ui/primitives';
+import { useViewStore } from '@/stores/viewStore';
 import { cn } from '@/utils';
 
 function HelpTip({ help }: { help?: ReactNode }) {
@@ -148,4 +149,10 @@ export function Stat({ label, value, unit, tone }: { label: string; value: React
       </div>
     </div>
   );
+}
+
+/** Fine-tuning controls, shown only when "Expert options" is switched on. */
+export function ExpertOnly({ children }: { children: ReactNode }) {
+  const on = useViewStore((s) => s.expert);
+  return on ? <>{children}</> : null;
 }

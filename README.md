@@ -19,22 +19,39 @@ Pick a sample (Cat, Moon & stars, Tree, Figure) or drop a PNG/JPG/SVG. Geometry 
 
 ## Two lamp types
 
-Pick one in the **Mounting** section:
+Pick one in step 1 (**Lamp type**):
 
 * **Table / shelf**: a closed box. Each panel's cut-outs project a silhouette onto the wall that panel faces.
 * **Wall-mounted**: an open-front box hung on the wall, with the LED on a post. The four side walls have **shaped edges**, and together they cast **one large silhouette onto the same wall**, around the lamp, inside a bright halo. You set the mounting height and ceiling height. The wall plate gets keyhole screw slots, and the cable groove runs downward. Use an omnidirectional emitter (filament or tube LED): the light has to travel back towards the wall.
 
+### Finger joints
+
+Every panel or side wall has tabs along its foot that drop into notches cut into the edge of the base or wall plate (box-joint style). The parts locate themselves, and a drop of glue makes the joint permanent. Tabs stop 0.3 mm short of the plate's back, so a wall plate always sits flat. They also stay clear of the cable groove. Switch them off under *All settings → Lamp dimensions* (expert options) to get plain butt joints.
+
+### Wall plate decoration
+
+On a wall lamp the LED lights up the plate behind it, and that is the surface you look at inside the lamp. In *Customise* you can leave it **plain** or add a **raised relief**:
+
+* **Silhouette**: your own figure, or a built-in moon, star, heart, bat, pumpkin or ghost;
+* **Text**: up to three lines in a bold, spooky or script font.
+
+Place it above, below or behind the LED post, and set its size. The relief keeps clear of the post socket, the side walls' lip and the screw heads. It sits inside the plate's own shadow, so the figure on the wall does not change. For a two-colour plate, print it design-side up and add a filament change at the plate's top layer; the build report gives the layer.
+
+Fonts: [Lilita One](https://fonts.google.com/specimen/Lilita+One), [Creepster](https://fonts.google.com/specimen/Creepster) and [Pacifico](https://fonts.google.com/specimen/Pacifico), bundled from Fontsource under the SIL Open Font License 1.1.
+
 ## Workflow
 
-1. **Upload**: PNG, JPG or SVG (drag-and-drop; large images are downscaled on decode).
-2. **Silhouette**:
+The studio opens in **guided mode**: six steps, each showing only the controls it needs, with *Back* / *Next* at the bottom of the left panel. First-time visitors get a one-minute walkthrough; the **?** button in the top bar replays it. **All settings** (top of the guide panel) shows every section. Its **Expert options** switch reveals the fine-tuning controls (tolerances, lip and holder sizes, wall angles, clean-up filters, simulation exposure), which stay hidden by default.
+
+1. **Lamp type**: table / shelf, or wall-mounted.
+2. **Picture**: PNG, JPG or SVG (drag-and-drop; large images are downscaled on decode).
+3. **Silhouette**:
    * **Automatic** mode picks alpha, background-colour distance or luminance segmentation.
    * **Manual** mode exposes threshold, contrast, background removal, noise/hole filtering, smoothing and crop.
    * SVGs can use their **exact vector paths**: transforms, `<use>`, CSS classes and fill rules are honoured, and light fills painted over dark ones cut holes.
-3. **Configure**: lamp dimensions; projection style (shadow figure or light figure); active panels; target wall distance, yaw and tilt; size, offset, rotation and mirror; LED position, emitter size, flux and holder.
-4. **Generate**: four independently projected panels, plus base plate, top cover and LED holder, validated in a worker.
+4. **Customise**: shadow size; which sides project (table) or the wall plate decoration (wall). Under *All settings*: lamp dimensions, projection style, target wall, offset, rotation and mirror, LED position, emitter, flux and holder. The geometry rebuilds automatically in a worker after every change.
 5. **Preview**: assembled, exploded, internal and panel-by-panel views, plus the **shadow simulation**. The simulation is a room lit through the actual mesh. You can toggle the LED, change intensity, emitter size, wall distance and orientation, move the light, rotate the lamp, and show light rays.
-6. **Export**: the validation report is shown first. Then download individual STLs (`Front_Panel`, `Back_Panel`, `Left_Panel`, `Right_Panel`, `Base_Plate`, `LED_Holder`, `Top_Cover`) in print-ready orientation, `Assembled_Model.stl`, an assembly reference PNG, or a ZIP of everything with a build report and `design.json`.
+6. **Export**: print tips and a one-click ZIP. *Review parts & checks* shows the validation report is shown first. Then download individual STLs (`Front_Panel`, `Back_Panel`, `Left_Panel`, `Right_Panel`, `Base_Plate`, `LED_Holder`, `Top_Cover`) in print-ready orientation, `Assembled_Model.stl`, an assembly reference PNG, or a ZIP of everything with a build report and `design.json`.
 
 Shortcuts: `⌘/Ctrl+Z` undo, `⇧⌘Z` / `Ctrl+Y` redo, `F` reset camera.
 
@@ -94,4 +111,4 @@ docs/           architecture and mathematics
 
 ## Printing notes
 
-Defaults target FDM PLA with a 0.4 mm nozzle. The *Print* tab adapts minimum feature size, clearance and orientation to your printer, and explains light-leak, ventilation and overhang trade-offs. Treat its guidance as a starting point, not a guarantee for any particular machine. For crisp shadows, print panels in **dark filament** and use a **small, wide-angle LED**.
+Defaults target FDM PLA with a 0.4 mm nozzle: walls 1.5–1.6 mm (the advice flags anything under 1 mm), and no feature, gap or bridge under 1.2 mm (three extrusion lines). The *Print* tab adapts minimum feature size, clearance and orientation to your printer, and explains light-leak, ventilation and overhang trade-offs. Treat its guidance as a starting point, not a guarantee for any particular machine. For crisp shadows, print panels in **dark filament** and use a **small, wide-angle LED**.

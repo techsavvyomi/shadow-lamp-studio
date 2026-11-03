@@ -14,6 +14,7 @@ export function BottomToolbar() {
   const hasResult = useGeometryStore((s) => !!s.result);
   const mode = useViewStore((s) => s.mode);
   const ledOn = useViewStore((s) => s.sim.ledOn);
+  const guided = useViewStore((s) => s.uiMode === 'guide');
 
   const previewShadow = () => {
     const v = useViewStore.getState();
@@ -50,15 +51,23 @@ export function BottomToolbar() {
 
       <div className="flex-1" />
 
-      <Button variant="secondary" size="md" onClick={() => useGeometryStore.getState().regenerate()} disabled={status === 'running'}>
-        {status === 'running' ? <Loader2 className="animate-spin" /> : <Hammer />}
-        <span className="hidden sm:inline">{status === 'running' ? 'Generating…' : 'Generate geometry'}</span>
-      </Button>
+      {guided ? (
+        status === 'running' && (
+          <span className="flex items-center gap-1.5 px-2 text-[11.5px] text-ink-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> <span className="hidden sm:inline">Updating…</span>
+          </span>
+        )
+      ) : (
+        <Button variant="secondary" size="md" onClick={() => useGeometryStore.getState().regenerate()} disabled={status === 'running'}>
+          {status === 'running' ? <Loader2 className="animate-spin" /> : <Hammer />}
+          <span className="hidden sm:inline">{status === 'running' ? 'Generating…' : 'Generate geometry'}</span>
+        </Button>
+      )}
       <Button variant={mode === 'simulation' && ledOn ? 'outline' : 'secondary'} size="md" onClick={previewShadow} className={mode === 'simulation' && ledOn ? 'border-glow-500 text-glow-200' : ''}>
         <Lightbulb />
         <span className="hidden sm:inline">{mode === 'simulation' ? (ledOn ? 'LED off' : 'LED on') : 'Preview shadow'}</span>
       </Button>
-      <Button variant="primary" size="md" disabled={!hasResult} onClick={() => useViewStore.getState().setExportOpen(true)}>
+      <Button variant="primary" size="md" disabled={!hasResult} onClick={() => useViewStore.getState().setExportOpen(true)} data-tour="export">
         <Download /> <span className="hidden sm:inline">Export STL</span>
       </Button>
     </footer>

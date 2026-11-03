@@ -109,6 +109,8 @@ export interface LampDimensions {
   frameMargin: number;
   /** Height of the locating lip on base/top that keeps panels aligned. */
   lipHeight: number;
+  /** Tabs on each panel's bottom edge that lock into notches in the base / wall plate. */
+  fingerJoints: boolean;
 }
 
 export type EmissionPattern = 'isotropic' | 'lambertian-up';
@@ -192,6 +194,30 @@ export interface MountingConfig {
   screwShank: number;
 }
 
+export type DecorationKind = 'none' | 'silhouette' | 'text';
+/** `figure` reuses the lamp's own silhouette; the rest are built-in shapes. */
+export type DecorationIcon = 'figure' | 'moon' | 'star' | 'heart' | 'bat' | 'pumpkin' | 'ghost';
+export type DecorationFont = 'bold' | 'spooky' | 'script';
+export type DecorationPosition = 'below' | 'above' | 'behind';
+
+/**
+ * Wall lamp: raised relief on the front face of the wall plate — the face the LED
+ * lights up and the viewer sees inside the open lamp.
+ */
+export interface PlateDecoration {
+  kind: DecorationKind;
+  icon: DecorationIcon;
+  /** Up to three lines, separated by newlines. */
+  text: string;
+  font: DecorationFont;
+  /** Where on the plate, relative to the LED post (as seen on the wall). */
+  position: DecorationPosition;
+  /** Fraction (0.2..1) of the largest size that fits the chosen area. */
+  size: number;
+  /** How far the relief stands off the plate, mm. */
+  height: number;
+}
+
 export interface DesignConfig {
   processing: ProcessingParams;
   lamp: LampDimensions;
@@ -199,6 +225,7 @@ export interface DesignConfig {
   projection: ProjectionConfig;
   print: PrintConfig;
   mounting: MountingConfig;
+  decoration: PlateDecoration;
 }
 
 // ---------------------------------------------------------------------------
@@ -242,6 +269,26 @@ export interface PanelDrawing {
   window: Loop[];
   /** Foot of the perpendicular from the light onto the panel plane. */
   lightFoot: Vec2;
+  /** Finger-joint tabs below the bottom edge (panel-local, y < 0). */
+  tabs: Loop[];
+}
+
+/**
+ * Wall plate as seen from the room: x to the right, y up, LED post at `led`.
+ * All loops are even-odd.
+ */
+export interface PlateDrawing {
+  width: number;
+  height: number;
+  /** Plate cross-section: outline with finger-joint notches, keyholes and wire hole. */
+  plate: Loop[];
+  /** Where a decoration may go (inside the side walls, clear of the post and screws). */
+  area: Loop[];
+  /** Raised decoration as generated. */
+  decoration: Loop[];
+  led: Vec2;
+  /** Radius kept clear around the LED post. */
+  postRadius: number;
 }
 
 export interface WallPlacement {
@@ -335,5 +382,7 @@ export interface LampGeometryResult {
   findings: Finding[];
   /** Resolved light position used for generation (world). */
   light: Vec3;
+  /** Wall lamps: the wall plate and its decoration, for 2D previews. */
+  plate: PlateDrawing | null;
   timings: Record<string, number>;
 }

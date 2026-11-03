@@ -1,10 +1,7 @@
-import { Check, PanelLeft, PanelRight } from 'lucide-react';
+import { Check, CircleHelp, PanelLeft, PanelRight } from 'lucide-react';
+import { GUIDE_STEPS, useGuideProgress } from '@/components/Guide/GuidePanel';
 import { Button, Tip } from '@/components/ui/primitives';
-import { useSilhouetteData } from '@/hooks/usePipeline';
-import { useGeometryStore } from '@/stores/geometryStore';
-import { useImageStore } from '@/stores/imageStore';
-import { useViewStore } from '@/stores/viewStore';
-import { PANEL_IDS } from '@/types';
+import { GUIDE_STEP_IDS, useViewStore, type GuideStepId } from '@/stores/viewStore';
 import { cn } from '@/utils';
 
 export function BrandMark({ className }: { className?: string }) {
@@ -24,36 +21,17 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-const STEPS = ['Upload', 'Silhouette', 'Configure', 'Generate', 'Preview', 'Export'] as const;
-
-function useStepState() {
-  const source = useImageStore((s) => !!s.source);
-  const silhouette = useSilhouetteData();
-  const result = useGeometryStore((s) => s.result);
-  const visited = useViewStore((s) => s.visited);
-  const generated = !!result && PANEL_IDS.some((id) => result.panels[id].placement);
-  const done = [source, !!silhouette, !!visited.configure || generated, generated, !!visited.preview, !!visited.export];
-  const current = done.findIndex((d) => !d);
-  return { done, current: current === -1 ? STEPS.length - 1 : current };
-}
-
-function goToStep(i: number) {
+function goToStep(id: GuideStepId) {
   const v = useViewStore.getState();
+  if (v.uiMode !== 'guide') v.setUiMode('guide');
   v.setLeftOpen(true);
-  if (i === 0) v.setLeftSection(['image']);
-  else if (i === 1) v.setLeftSection(['silhouette']);
-  else if (i === 2) {
-    v.setLeftSection(['mounting', 'lamp']);
-    v.markVisited('configure');
-  } else if (i === 3) {
-    useGeometryStore.getState().regenerate();
-    v.setMode('assembled');
-  } else if (i === 4) v.setMode('simulation');
-  else v.setExportOpen(true);
+  v.setGuideStep(id);
 }
 
 export function TopBar() {
-  const { done, current } = useStepState();
+  const done = useGuideProgress();
+  const guideStep = useViewStore((s) => s.guideStep);
+  const guided = useViewStore((s) => s.uiMode === 'guide');
   const leftOpen = useViewStore((s) => s.leftOpen);
   const rightOpen = useViewStore((s) => s.rightOpen);
   return (
@@ -71,15 +49,17 @@ export function TopBar() {
         </div>
       </div>
 
-      <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label="Workflow">
-        {STEPS.map((label, i) => {
-          const isDone = done[i];
-          const isCurrent = i === current;
+      <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label="Workflow" data-tour="steps">
+        {GUIDE_STEP_IDS.map((id, i) => {
+          const label = GUIDE_STEPS[id].label;
+          const isDone = done[id] && !(guided && id === guideStep);
+          const isCurrent = guided && id === guideStep;
           return (
-            <div key={label} className="flex items-center gap-1">
-              <Tip content={`Step ${i + 1}: ${label}`} side="bottom">
+            <div key={id} className="flex items-center gap-1">
+              <Tip content={`Step ${i + 1}: ${GUIDE_STEPS[id].title}`} side="bottom">
                 <button
-                  onClick={() => goToStep(i)}
+                  onClick={() => goToStep(id)}
+                  aria-current={isCurrent ? 'step' : undefined}
                   className={cn(
                     'flex items-center gap-1.5 rounded-full border px-2 py-[3px] text-[11.5px] font-medium transition-all',
                     isCurrent
@@ -100,13 +80,18 @@ export function TopBar() {
                   <span className="hidden lg:inline">{label}</span>
                 </button>
               </Tip>
-              {i < STEPS.length - 1 && <span className={cn('h-px w-3 lg:w-5', done[i] ? 'bg-ok/50' : 'bg-ink-700')} />}
+              {i < GUIDE_STEP_IDS.length - 1 && <span className={cn('h-px w-3 lg:w-5', done[id] ? 'bg-ok/50' : 'bg-ink-700')} />}
             </div>
           );
         })}
       </nav>
 
-      <div className="ml-auto md:ml-0">
+      <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <Tip content="Show the walkthrough again" side="bottom">
+          <Button variant="ghost" size="icon-sm" data-tour="help" onClick={() => useViewStore.getState().startTour()} aria-label="Help: replay the walkthrough">
+            <CircleHelp />
+          </Button>
+        </Tip>
         <Button variant="ghost" size="icon-sm" onClick={() => useViewStore.getState().setRightOpen(!rightOpen)} aria-label="Toggle right panel">
           <PanelRight className={rightOpen ? 'text-glow-300' : ''} />
         </Button>

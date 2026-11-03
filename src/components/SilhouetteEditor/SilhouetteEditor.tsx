@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Crop, Eye, Layers, Loader2, Sparkles, SlidersHorizontal, Square } from 'lucide-react';
-import { NumberField, SelectField, Stat, SubHeading, ToggleField } from '@/components/common/Fields';
+import { ExpertOnly, NumberField, SelectField, Stat, SubHeading, ToggleField } from '@/components/common/Fields';
 import { Button, ToggleGroup, ToggleGroupItem } from '@/components/ui/primitives';
 import { useVectorMode } from '@/hooks/usePipeline';
 import { useDesignStore } from '@/stores/designStore';
 import { useImageStore } from '@/stores/imageStore';
+import { useViewStore } from '@/stores/viewStore';
 import type { ProcessingParams } from '@/types';
 import { SilhouettePreview, type PreviewMode } from './SilhouettePreview';
 
-export function SilhouetteEditor() {
+/** `simple` (guided mode): preview, crop and invert only; the rest lives in All settings. */
+export function SilhouetteEditor({ simple = false }: { simple?: boolean }) {
   const source = useImageStore((s) => s.source);
   const processed = useImageStore((s) => s.processed);
   const status = useImageStore((s) => s.status);
@@ -56,7 +58,25 @@ export function SilhouetteEditor() {
         </button>
       )}
 
-      {source.kind === 'svg' && (
+      {simple && (
+        <>
+          <ToggleField label="Invert (swap shape and background)" checked={p.invert} onChange={(invert) => update({ invert })} />
+          <p className="text-[11px] leading-snug text-ink-400">
+            {status === 'processing' ? 'Tracing the outline…' : 'Not quite right? Try Invert, crop to the subject, or open '}
+            {status !== 'processing' && (
+              <button className="text-glow-300 hover:underline" onClick={() => {
+                const v = useViewStore.getState();
+                v.setUiMode('advanced');
+                v.setLeftSection(['silhouette']);
+              }}>
+                All settings → Silhouette
+              </button>
+            )}
+            {status !== 'processing' && ' for threshold and clean-up controls.'}
+          </p>
+        </>
+      )}
+      {!simple && source.kind === 'svg' && (
         <ToggleField
           label="Exact vector paths (SVG)"
           checked={p.svgVector}
@@ -64,9 +84,9 @@ export function SilhouetteEditor() {
           help="Use the SVG's own curves (flattened to 0.2 units) instead of tracing a rasterised copy. Disable for stroke-only artwork."
         />
       )}
-      {source.kind === 'svg' && source.vectorWarnings.length > 0 && <div className="text-[11px] text-warn">{source.vectorWarnings.join(' ')}</div>}
+      {!simple && source.kind === 'svg' && source.vectorWarnings.length > 0 && <div className="text-[11px] text-warn">{source.vectorWarnings.join(' ')}</div>}
 
-      {!vectorMode && (
+      {!simple && !vectorMode && (
         <>
           <ToggleGroup type="single" value={p.mode} onValueChange={(v) => v && update({ mode: v as ProcessingParams['mode'] })}>
             <ToggleGroupItem value="auto">
@@ -106,9 +126,10 @@ export function SilhouetteEditor() {
         </>
       )}
 
-      <ToggleField label="Invert silhouette" checked={p.invert} onChange={(invert) => update({ invert })} />
+      {!simple && <ToggleField label="Invert silhouette" checked={p.invert} onChange={(invert) => update({ invert })} />}
 
-      {!vectorMode && (
+      <ExpertOnly>
+      {!simple && !vectorMode && (
         <>
           <SubHeading>Clean-up</SubHeading>
           <NumberField label="Remove noise below" value={p.noiseArea} min={0} max={3} step={0.01} unit="%" onChange={(noiseArea) => update({ noiseArea })} help="Drops foreground islands smaller than this share of the image." />
@@ -118,7 +139,7 @@ export function SilhouetteEditor() {
         </>
       )}
 
-      {stats && !vectorMode && (
+      {!simple && stats && !vectorMode && (
         <div className="space-y-2 pt-1">
           <div className="grid grid-cols-3 gap-1.5">
             <Stat label="Regions" value={stats.components} />
@@ -136,11 +157,12 @@ export function SilhouetteEditor() {
           </div>
         </div>
       )}
-      {vectorMode && source.vector && (
+      {!simple && vectorMode && source.vector && (
         <div className="text-[11px] text-ink-400">
           Using {source.vector.shapes.length} vector shapes directly (painter's order; light fills cut holes).
         </div>
       )}
+      </ExpertOnly>
     </div>
   );
 }

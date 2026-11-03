@@ -11,6 +11,8 @@ export interface GeometryJob {
   silhouette: SilhouetteData | null;
   design: Required<LampDesign>;
   options: Omit<BuildOptions, 'onProgress'>;
+  /** Wall plate decoration artwork (resolved on the main thread, where fonts load). */
+  plateArt: SilhouetteData | null;
 }
 
 export type WorkerRequest<P> = { id: number; payload: P };

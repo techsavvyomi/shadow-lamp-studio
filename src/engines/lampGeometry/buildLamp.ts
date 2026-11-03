@@ -11,12 +11,13 @@ import type {
   PanelId,
   PartGeometry,
   PartId,
+  PlateDrawing,
   SilhouetteData,
   Vec3,
   WallPlacement,
 } from '@/types';
 import { PANEL_IDS } from '@/types';
-import { DEFAULT_MOUNTING } from '../defaults';
+import { DEFAULT_DECORATION, DEFAULT_MOUNTING } from '../defaults';
 import { clamp, invertRigid, multiply, rotationX, translation } from '../math/vec';
 import { mountingWallFrame, partNames } from '../projectionGeometry/mounting';
 import { lampLayout, panelFrame, type PanelFrame, type WallFrame } from '../projectionGeometry/frames';
@@ -26,10 +27,11 @@ import type { Manifold, ManifoldToplevel } from './manifoldRuntime';
 import { Scope } from './manifoldRuntime';
 import { buildPanel } from './panelBuilder';
 import { buildUnitSilhouette } from './silhouetteRegion';
-import { buildBase, buildLedHolder, buildTop, HOLDER, holderRimRadius, holderRimY, minLightHeight } from './structure';
+import { buildPlateDecoration } from './plateDecoration';
+import { buildBase, buildFingerJoints, buildLedHolder, buildTop, HOLDER, holderRimRadius, holderRimY, minLightHeight } from './structure';
 import { buildWallPanels } from './wallLampBuilder';
 
-export type LampDesign = Pick<DesignConfig, 'lamp' | 'light' | 'projection' | 'print'> & { mounting?: MountingConfig };
+export type LampDesign = Pick<DesignConfig, 'lamp' | 'light' | 'projection' | 'print'> & { mounting?: MountingConfig; decoration?: DesignConfig['decoration'] };
 
 export interface BuildOptions {
   validate?: boolean;
@@ -116,6 +118,8 @@ export async function buildLamp(
   silhouette: SilhouetteData | null,
   design: LampDesign,
   options: BuildOptions = {},
+  /** Wall lamps: artwork for the wall plate decoration (resolved by the caller). */
+  plateArt: SilhouetteData | null = null,
 ): Promise<LampGeometryResult> {
   const progress = options.onProgress ?? (() => {});
   const timings: Record<string, number> = {};
@@ -192,7 +196,24 @@ export async function buildLamp(
 
     t0 = performance.now();
     progress('Building base, cover and LED holder', 0.62);
-    solids.set('base', buildBase(wasm, design.lamp, effDesign.light, design.print, scope, mounting));
+    let base = buildBase(wasm, design.lamp, effDesign.light, design.print, scope, mounting);
+    if (design.lamp.fingerJoints) {
+      const joints = buildFingerJoints(wasm, frames, design.lamp, design.print, light, mounting.type, scope);
+      for (const id of PANEL_IDS) {
+        const tab = joints.tabs[id];
+        if (tab) solids.set(id, scope.keep(solids.get(id)!.add(tab)));
+        drawings[id].tabs = joints.drawings[id];
+      }
+      if (joints.notches) base = scope.keep(base.subtract(joints.notches));
+    }
+    let plate: PlateDrawing | null = null;
+    if (isWall) {
+      const deco = buildPlateDecoration(wasm, base, design.lamp, light, design.print, mounting, design.decoration ?? DEFAULT_DECORATION, plateArt, scope);
+      if (deco.relief) base = scope.keep(base.add(deco.relief));
+      plate = deco.drawing;
+      findings.push(...deco.findings);
+    }
+    solids.set('base', base);
     if (design.lamp.topCover && !isWall) solids.set('top', buildTop(wasm, design.lamp, effDesign.light, design.print, scope));
     solids.set('ledHolder', buildLedHolder(wasm, design.lamp, effDesign.light, design.print, scope));
     tick('structure', t0);
@@ -272,7 +293,7 @@ export async function buildLamp(
       tick('validation', t0);
     }
     progress('Done', 1);
-    return { mounting: mounting.type, figure, parts, panels, drawings, validation, findings, light, timings };
+    return { mounting: mounting.type, figure, parts, panels, drawings, validation, findings, light, plate, timings };
   } finally {
     scope.dispose();
   }

@@ -16,9 +16,13 @@ export interface Recommendation {
   status: RecStatus;
 }
 
+/** FDM: three extrusion lines (1.2 mm for a 0.4 mm nozzle) — two lines print but break easily. */
 export function recommendedMinFeature(p: Pick<PrintConfig, 'printer' | 'nozzle'>): number {
-  return p.printer === 'SLA' ? 0.4 : Math.round(p.nozzle * 2 * 100) / 100;
+  return p.printer === 'SLA' ? 0.4 : Math.round(p.nozzle * 3 * 100) / 100;
 }
+
+/** FDM walls: at least 1 mm, and never under 2.5 extrusion lines. */
+export const recommendedMinWall = (p: Pick<PrintConfig, 'printer' | 'nozzle'>) => (p.printer === 'SLA' ? 0.6 : Math.max(1, 2.5 * p.nozzle));
 
 export function recommendedClearance(p: Pick<PrintConfig, 'printer'>): number {
   return p.printer === 'SLA' ? 0.1 : 0.2;
@@ -30,14 +34,14 @@ export function printRecommendations(design: DesignConfig, result: LampGeometryR
   const fdm = print.printer === 'FDM';
 
   // Minimum wall thickness
-  const minWall = fdm ? 2 * print.nozzle : 0.6;
+  const minWall = recommendedMinWall(print);
   out.push({
     id: 'wall',
     title: 'Minimum wall thickness',
     value: `${minWall.toFixed(2)} mm`,
     status: lamp.wallThickness >= minWall ? 'ok' : 'warn',
     detail: fdm
-      ? `Two perimeters of a ${print.nozzle} mm nozzle. Panels are ${lamp.wallThickness} mm (${(lamp.wallThickness / print.layerHeight).toFixed(0)} layers flat).`
+      ? `At least 1 mm (2.5 lines of a ${print.nozzle} mm nozzle) so walls stay stiff and opaque. Panels are ${lamp.wallThickness} mm (${(lamp.wallThickness / print.layerHeight).toFixed(0)} layers flat).`
       : `Unsupported resin walls below ~0.6 mm tend to warp or break. Panels are ${lamp.wallThickness} mm.`,
   });
 
@@ -173,6 +177,17 @@ export function printRecommendations(design: DesignConfig, result: LampGeometryR
       status: design.light.pattern === 'isotropic' ? 'ok' : 'warn',
       detail: 'The light must travel back towards the wall: use a filament, tube or side-emitting LED at the post tip, not a forward-facing SMD. A smaller emitter gives crisper figure edges.',
     });
+    if (design.decoration.kind !== 'none' && fdm) {
+      const z = lamp.baseThickness;
+      const layer = Math.round(z / print.layerHeight);
+      out.push({
+        id: 'relief',
+        title: 'Two-colour wall plate',
+        value: `Pause at Z ${z.toFixed(1)} mm`,
+        status: 'info',
+        detail: `Print the wall plate design-side up. To make the raised design stand out, add a filament change at layer ${layer + 1} (Z ${z.toFixed(1)} mm) and switch to a light colour; the lip and post socket print in that colour too.`,
+      });
+    }
   }
 
   if (print.printer === 'SLA' && print.material !== 'Resin')

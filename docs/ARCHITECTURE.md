@@ -41,7 +41,7 @@ Giftieverse Shadow Lamp Studio turns a silhouette into a lamp whose panels cast 
 
 Millimetres everywhere. World origin at the centre of the lamp footprint on the table, **+Y up**, **+X** right when facing the front panel, **+Z** out of the front panel.
 
-Each panel has a local frame `(u, v, n)`: `x ∈ [0, w]` left→right *as seen from outside*, `y ∈ [0, h]` up, `z ∈ [0, t]` from the inner (light-facing) face to the outer face. `u × v = n`, so local→world is a proper rotation and never flips triangle winding. Front and back panels span the full width; left and right fit between them (butt joints).
+Each panel has a local frame `(u, v, n)`: `x ∈ [0, w]` left→right *as seen from outside*, `y ∈ [0, h]` up, `z ∈ [0, t]` from the inner (light-facing) face to the outer face. `u × v = n`, so local→world is a proper rotation and never flips triangle winding. Front and back panels span the full width; left and right fit between them. Each panel's foot carries finger-joint tabs (`structure.ts › buildFingerJoints`): an even number, clear of the corners and of the cable groove's exit, reaching `baseThickness − 0.3` mm into notches cut through the plate edge with `clearance` on every side. With joints on, the base lip steps back a further 0.4 mm, so no notch face is coplanar with the lip (coplanar faces leave slivers).
 
 Each target wall has a frame `(origin, u, v, normal)` with `a` to the right and `b` up as seen by someone standing at the lamp facing the wall, and the normal pointing at the lamp. The origin is on the table line directly in front of the panel centre; yaw rotates about vertical and pitch hinges on the table line.
 
@@ -121,6 +121,14 @@ Sensitivities (cat sample, measured by re-projecting the real mesh with a displa
 
 Along the post, an error mostly **scales** the figure (about 7% per mm for the large-reach design) rather than distorting it. The more the side walls approach the emitter's height, the bigger, softer and more placement-sensitive the figure becomes.
 
+### Wall plate decoration
+
+`plateDecoration.ts` works in plate coordinates as seen from the room (u = lamp x, v = −lamp z). The usable area is the rectangle inside the side walls' lip (less a 2 mm gap), minus keep-outs for the LED socket and each keyhole, including the screw head's seat at the top of the slot.
+* *Below* and *behind* use one box. *Above* tries three boxes (between the screws, under them, over them) and keeps whichever lets the artwork grow largest.
+* The artwork (a `SilhouetteData`: the lamp's own figure, a built-in shape, or text flattened from opentype.js glyph outlines on the main thread) is scaled to fit, clipped to the area, and extruded upward from the plate face.
+* An opening by the minimum feature size measures strokes too thin to print; more than 3% lost raises a warning.
+* The relief lies within the plate's footprint, so its shadow falls inside the plate's own shadow. Tests check that the wall figure's fidelity is unchanged.
+
 ## 4. Shadow simulation
 
 The simulator computes shadows **from the generated mesh**. No image is baked or overlaid.
@@ -166,5 +174,6 @@ Panels, base, top and holder each export as a single watertight shell. `Assemble
 
 * Background removal is classical segmentation (alpha / border-colour distance / luminance Otsu). Photos with busy backgrounds need manual tuning; ML segmentation could slot into `imageProcessing`.
 * One silhouette is shared by all panels (each still computed for its own wall). Per-panel images and panoramic scenes spanning walls are natural extensions of `PanelBuildInput`.
-* Panels use butt joints with locating lips and glue; finger joints or snap-fits would remove the glue step.
+* Finger joints locate the panels, but the corners are still glued; snap-fits would remove the glue step.
+* Plate decoration text is limited to the three bundled fonts (Latin glyphs); other scripts would need more font files.
 * The assembled STL is multi-body (reference only); a boolean union would be needed for a single printable assembly.

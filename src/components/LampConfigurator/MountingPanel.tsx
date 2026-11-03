@@ -1,4 +1,4 @@
-import { NumberField, SubHeading, ToggleField } from '@/components/common/Fields';
+import { ExpertOnly, NumberField, SubHeading, ToggleField } from '@/components/common/Fields';
 import { DEFAULT_LAMP, DEFAULT_LIGHT, DEFAULT_PROJECTION, LIMITS, WALL_PRESET } from '@/engines/defaults';
 import { useDesignStore } from '@/stores/designStore';
 import type { MountingConfig, MountingType } from '@/types';
@@ -64,7 +64,8 @@ const OPTIONS: { type: MountingType; title: string; text: string; art: () => JSX
   { type: 'wall', title: 'Wall-mounted', text: 'Open front, LED on a post. Shaped side walls cast one big silhouette on the same wall.', art: WallArt },
 ];
 
-export function MountingPanel() {
+/** `compact` (guided mode) shows only the lamp-type choice. */
+export function MountingPanel({ compact = false }: { compact?: boolean }) {
   const m = useDesignStore((s) => s.design.mounting);
   const up = (patch: Partial<MountingConfig>) => useDesignStore.getState().update('mounting', patch);
   return (
@@ -91,7 +92,7 @@ export function MountingPanel() {
         ))}
       </div>
 
-      {m.type === 'wall' && (
+      {m.type === 'wall' && !compact && (
         <>
           <SubHeading>On the wall</SubHeading>
           <NumberField
@@ -104,6 +105,7 @@ export function MountingPanel() {
             onChange={(height) => up({ height })}
             help="Height of the lamp's centre above the floor. The figure is kept between the floor and the ceiling."
           />
+          <ExpertOnly>
           <NumberField label="Ceiling height" value={m.ceilingHeight} min={LIMITS.ceilingHeight[0]} max={LIMITS.ceilingHeight[1]} step={10} unit="mm" onChange={(ceilingHeight) => up({ ceilingHeight })} />
           <ToggleField label="Keyhole screw slots" checked={m.keyholes} onChange={(keyholes) => up({ keyholes })} help="Two keyholes in the wall plate: fit the screws, hang the lamp, slide it down." />
           {m.keyholes && (
@@ -112,6 +114,7 @@ export function MountingPanel() {
               <NumberField label="Screw shank Ø" value={m.screwShank} min={2} max={6} step={0.1} unit="mm" onChange={(screwShank) => up({ screwShank })} />
             </div>
           )}
+          </ExpertOnly>
         </>
       )}
     </div>

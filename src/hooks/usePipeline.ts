@@ -9,6 +9,7 @@ import { useGeometryStore } from '@/stores/geometryStore';
 import { useImageStore } from '@/stores/imageStore';
 import type { SilhouetteData } from '@/types';
 import { isSuperseded, LatestWorkerClient } from '@/workers/client';
+import { usePlateArt } from './usePlateArt';
 import type { GeometryJob, GeometryResult, ImageJob, ImageResult } from '@/workers/protocol';
 
 const imageClient = new LatestWorkerClient<ImageJob, ImageResult>(
@@ -86,16 +87,18 @@ export function useGeometryGeneration() {
   const projection = useDesignStore((s) => s.design.projection);
   const print = useDesignStore((s) => s.design.print);
   const mounting = useDesignStore((s) => s.design.mounting);
+  const decoration = useDesignStore((s) => s.design.decoration);
+  const plate = usePlateArt(silhouette);
   const imageStatus = useImageStore((s) => s.status);
   const regenToken = useGeometryStore((s) => s.regenToken);
 
   useEffect(() => {
-    if (imageStatus === 'processing' || imageStatus === 'loading') return;
+    if (imageStatus === 'processing' || imageStatus === 'loading' || plate.pending) return;
     const store = useGeometryStore.getState();
     store.setRunning();
     const t = setTimeout(() => {
       geometryClient
-        .run({ silhouette, design: { lamp, light, projection, print, mounting }, options: { validate: true, fidelity: true, selfIntersection: true } }, [], (stage, fraction) =>
+        .run({ silhouette, design: { lamp, light, projection, print, mounting, decoration }, options: { validate: true, fidelity: true, selfIntersection: true }, plateArt: plate.art }, [], (stage, fraction) =>
           useGeometryStore.getState().setProgress(stage, fraction),
         )
         .then((r) => useGeometryStore.getState().setResult(r))
@@ -104,5 +107,5 @@ export function useGeometryGeneration() {
         });
     }, 220);
     return () => clearTimeout(t);
-  }, [silhouette, lamp, light, projection, print, mounting, imageStatus, regenToken]);
+  }, [silhouette, lamp, light, projection, print, mounting, decoration, plate.art, plate.pending, imageStatus, regenToken]);
 }

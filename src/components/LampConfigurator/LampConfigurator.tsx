@@ -1,5 +1,5 @@
 import { Moon, Sun } from 'lucide-react';
-import { NumberField, SelectField, SubHeading, ToggleField } from '@/components/common/Fields';
+import { ExpertOnly, NumberField, SelectField, SubHeading, ToggleField } from '@/components/common/Fields';
 import { Button, ToggleGroup, ToggleGroupItem } from '@/components/ui/primitives';
 import { LIMITS } from '@/engines/defaults';
 import { minLightHeight } from '@/engines/lampGeometry/structure';
@@ -31,7 +31,8 @@ export function LampDimensionsPanel() {
         help={wall ? 'How far the side walls stand off the wall, plate included. The closer they reach to the LED, the larger (and softer) the figure.' : 'Overall height including base and top cover.'}
       />
       <SubHeading>Thickness</SubHeading>
-      <NumberField label="Panel thickness" value={l.wallThickness} min={LIMITS.wallThickness[0]} max={LIMITS.wallThickness[1]} step={0.1} unit="mm" onChange={(wallThickness) => upLamp({ wallThickness })} />
+      <NumberField label="Panel thickness" value={l.wallThickness} min={LIMITS.wallThickness[0]} max={LIMITS.wallThickness[1]} step={0.1} unit="mm" onChange={(wallThickness) => upLamp({ wallThickness })} help="1–1.5 mm suits a 0.4 mm nozzle: stiff, opaque and quick to print." />
+      <ExpertOnly>
       <NumberField label={wall ? 'Wall plate thickness' : 'Base thickness'} value={l.baseThickness} min={LIMITS.baseThickness[0]} max={LIMITS.baseThickness[1]} step={0.1} unit="mm" onChange={(baseThickness) => upLamp({ baseThickness })} />
       <NumberField
         label={wall ? 'Base strip height' : 'Frame margin'}
@@ -44,6 +45,12 @@ export function LampDimensionsPanel() {
         help={wall ? 'Solid strip along the foot of each side wall that seats it on the plate. It shades a thin band right around the lamp.' : "Solid border around each panel's projection window — stiffens the panel."}
       />
       <NumberField label="Locating lip height" value={l.lipHeight} min={LIMITS.lipHeight[0]} max={LIMITS.lipHeight[1]} step={0.5} unit="mm" onChange={(lipHeight) => upLamp({ lipHeight })} />
+      <ToggleField
+        label="Finger joints"
+        checked={l.fingerJoints}
+        onChange={(fingerJoints) => upLamp({ fingerJoints })}
+        help={`Tabs on the foot of each ${wall ? 'side wall' : 'panel'} drop into notches in the ${wall ? 'wall plate' : 'base'}, so the parts locate themselves. Off: plain butt joints against the lip.`}
+      />
       {!wall && <SubHeading>Top cover</SubHeading>}
       {!wall && <ToggleField label="Top cover" checked={l.topCover} onChange={(topCover) => upLamp({ topCover })} help="Without a cover, light escapes upwards and washes the walls above the image." />}
       {!wall && l.topCover && (
@@ -52,6 +59,7 @@ export function LampDimensionsPanel() {
           <ToggleField label="Ventilation holes" checked={l.topVents} onChange={(topVents) => upLamp({ topVents })} />
         </>
       )}
+      </ExpertOnly>
     </div>
   );
 }
@@ -118,6 +126,7 @@ export function ProjectionPanel() {
         </div>
       </div>
 
+      <ExpertOnly>
       {!wall && (
         <>
       <SubHeading>Target wall</SubHeading>
@@ -127,6 +136,7 @@ export function ProjectionPanel() {
       <ToggleField label="Keep above the table line" checked={p.respectFloor} onChange={(respectFloor) => upProj({ respectFloor })} help="Rays aimed below the table hit the table first; keeping the projection above it avoids losing part of the figure." />
         </>
       )}
+      </ExpertOnly>
 
       <SubHeading>Silhouette placement</SubHeading>
       {wall && <p className="-mt-1 text-[10.5px] leading-snug text-ink-400">The lamp sits at the deepest point of the figure; offsets move the figure around the lamp.</p>}
@@ -136,6 +146,7 @@ export function ProjectionPanel() {
       <NumberField label="Rotation" value={p.rotation} min={-180} max={180} unit="°" onChange={(rotation) => upProj({ rotation })} />
       <ToggleField label="Mirror" checked={p.mirror} onChange={(mirror) => upProj({ mirror })} />
 
+      <ExpertOnly>
       <SubHeading>Manufacturability</SubHeading>
       <NumberField label="Bridge width" value={p.bridgeWidth} min={LIMITS.bridgeWidth[0]} max={LIMITS.bridgeWidth[1]} step={0.1} unit="mm" onChange={(bridgeWidth) => upProj({ bridgeWidth })} help="Struts that hold floating islands. Wider = stronger but more visible on the wall." />
       <SelectField
@@ -147,6 +158,7 @@ export function ProjectionPanel() {
           { value: 'remove', label: 'Remove' },
         ]}
       />
+      </ExpertOnly>
     </div>
   );
 }
@@ -176,6 +188,7 @@ export function LightPanel() {
         onChange={(v) => upLight({ position: [x, v, z] }, 'light:y')}
         help={wall ? "The emitter's distance from the wall. Reach grows as the side walls approach this distance." : 'Lower LEDs throw more of each panel upward onto the wall.'}
       />
+      <ExpertOnly>
       <NumberField label="Left ↔ right (X)" value={x} min={-Math.round(halfW)} max={Math.round(halfW)} step={0.5} unit="mm" onChange={(v) => upLight({ position: [v, y, z] }, 'light:x')} />
       <NumberField
         label={wall ? 'Up ↔ down (Z, + is down)' : 'Back ↔ front (Z)'}
@@ -186,6 +199,7 @@ export function LightPanel() {
         unit="mm"
         onChange={(v) => upLight({ position: [x, y, v] }, 'light:z')}
       />
+      </ExpertOnly>
       {clamped && resolved && (
         <p className="text-[10.5px] text-warn">
           Constrained to ({resolved.map((v) => v.toFixed(1)).join(', ')}) so the holder fits.
@@ -203,6 +217,7 @@ export function LightPanel() {
         help="Diameter of the light-emitting area. Shadow edge blur grows linearly with it — use a small bare LED die for crisp shadows."
       />
       {penumbra !== undefined && penumbra > 0 && <p className="text-[10.5px] text-ink-400">≈ {penumbra.toFixed(0)} mm edge blur {wall ? "at the figure's tips" : 'on the front wall'}.</p>}
+      <ExpertOnly>
       <NumberField label="Luminous flux" value={light.flux} min={LIMITS.flux[0]} max={LIMITS.flux[1]} step={5} unit="lm" onChange={(flux) => upLight({ flux })} />
       <SelectField
         label="Emission pattern"
@@ -226,6 +241,7 @@ export function LightPanel() {
         onChange={(emitterAboveRim) => upLight({ emitterAboveRim })}
         help="The holder shadows rays steeper than atan(height / rim radius) below horizontal; the window is limited accordingly."
       />
+      </ExpertOnly>
     </div>
   );
 }

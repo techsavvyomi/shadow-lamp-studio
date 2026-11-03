@@ -14,7 +14,7 @@ ctx.onmessage = async (e: MessageEvent<WorkerRequest<GeometryJob>>) => {
     const result = await buildLamp(wasm, payload.silhouette, payload.design, {
       ...payload.options,
       onProgress: (stage, fraction) => post({ id, type: 'progress', stage, fraction }),
-    });
+    }, payload.plateArt);
     const transfer: Transferable[] = [];
     for (const p of result.parts) transfer.push(p.mesh.positions.buffer, p.mesh.indices.buffer);
     post({ id, type: 'result', result }, transfer);

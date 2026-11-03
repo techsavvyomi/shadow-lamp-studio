@@ -20,6 +20,11 @@ export function buildReport(design: DesignConfig, r: LampGeometryResult, printRe
       L.push(
         `  Figure on the wall: ${f(r.figure.width / 10, 0)} × ${f(r.figure.height / 10, 0)} cm, fidelity ${r.figure.fidelity !== null ? f(r.figure.fidelity * 100) + '%' : 'n/a'}, edge blur ${f(r.figure.nearBlur, 0)}–${f(r.figure.farBlur, 0)} mm, lamp inside figure ${f(r.figure.lampCoveredPct, 0)}%`,
       );
+    const deco = design.decoration;
+    if (deco.kind !== 'none')
+      L.push(
+        `  Wall plate decoration: raised ${deco.kind === 'text' ? `text "${deco.text.replace(/\n/g, ' / ')}" (${deco.font} font)` : `${deco.icon === 'figure' ? 'copy of the figure' : deco.icon}`}, ${deco.position} the LED, ${deco.height} mm high`,
+      );
     L.push('  File names: Lower/Upper/Left/Right_Wall = side walls as seen when hanging; Wall_Plate; LED_Post.', '');
   } else {
     L.push('LAMP', `  ${lamp.width} × ${lamp.depth} × ${lamp.height} mm, panels ${lamp.wallThickness} mm, base ${lamp.baseThickness} mm, top ${lamp.topCover ? lamp.topThickness + ' mm' : 'open'}`);
@@ -49,14 +54,22 @@ export function buildReport(design: DesignConfig, r: LampGeometryResult, printRe
   if (wall) {
     L.push('', 'ASSEMBLY & HANGING');
     L.push('  1. Glue the LED post flange into the socket ring on the wall plate; run the leads down the bore and out along the groove (it exits at the bottom edge).');
-    L.push('  2. Fit the upper and lower side walls outside the locating lip, then the left and right walls between them; glue the corners.');
+    L.push(
+      lamp.fingerJoints
+        ? '  2. Drop each side wall\'s tabs into the matching notches at the plate edge (upper and lower walls first, then left and right between them); a drop of glue in each notch and at the corners makes it permanent.'
+        : '  2. Fit the upper and lower side walls outside the locating lip, then the left and right walls between them; glue the corners.',
+    );
     L.push(`  3. Seat an omnidirectional emitter (filament / tube LED) at the post tip, ${f(r.light[1])} mm from the wall.`);
     if (mounting.keyholes)
       L.push(`  4. Drive two screws (head ≤ ${mounting.screwHead} mm, shank ≤ ${mounting.screwShank} mm) into the wall, leaving the heads ~3 mm proud, matching the keyhole spacing; hang the lamp and slide it down.`);
     L.push(`  ${mounting.keyholes ? 5 : 4}. Mount with the lamp centre about ${mounting.height} mm above the floor ("Lower_Wall" pointing down); view in a dark room.`);
   } else {
     L.push('', 'ASSEMBLY', '  1. Insert the LED holder flange into the socket ring on the base; feed the LED leads down the bore and along the underside groove.');
-    L.push('  2. Stand the front and back panels on the base outside the locating lip; slide the left and right panels between them.');
+    L.push(
+      lamp.fingerJoints
+        ? '  2. Drop the front and back panels\' tabs into the notches at the base edge, then the left and right panels between them.'
+        : '  2. Stand the front and back panels on the base outside the locating lip; slide the left and right panels between them.',
+    );
     L.push('  3. Seal the vertical corner joints with a thin bead of glue to stop light leaking, then press the top cover on.');
     L.push('  4. Place the lamp so the front panel faces the wall at the design distance, in a dark room.');
   }
