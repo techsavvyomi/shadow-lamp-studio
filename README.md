@@ -24,6 +24,13 @@ Pick one in step 1 (**Lamp type**):
 * **Table / shelf**: a closed box. Each panel's cut-outs project a silhouette onto the wall that panel faces.
 * **Wall-mounted**: an open-front box hung on the wall, with the LED on a post. The four side walls have **shaped edges**, and together they cast **one large silhouette onto the same wall**, around the lamp, inside a bright halo. You set the mounting height and ceiling height. The wall plate gets keyhole screw slots, and the cable groove runs downward. Use an omnidirectional emitter (filament or tube LED): the light has to travel back towards the wall.
 
+### Moving the figure
+
+The placement pad shows the wall as the lamp lights it: the reachable (lit) area, your figure as its shadow, and on a wall lamp the lamp itself. Every move re-designs the panels for the new spot (inverse projection again), so the cast shadow is always your silhouette, not a shifted copy of the old one. Tests check the shadow still matches after moves: ≥ 95% IoU on every table-lamp side.
+
+* **Table lamp**: the figure moves as is. It is clipped, with a warning, only past the edge of what the panel can reach.
+* **Wall lamp**: the figure is re-fitted to what the side walls can reach at the new spot. The lamp body sits on the wall in the light, so any part of it the figure does not cover shows as a dark block. The pad shows **lamp hidden %** live (green ≥ 95%, amber, red); ⌖ returns to the best spot, with the lamp at the figure's deepest point.
+
 ### Finger joints
 
 Every panel or side wall has tabs along its foot that drop into notches cut into the edge of the base or wall plate (box-joint style). The parts locate themselves, and a drop of glue makes the joint permanent. Tabs stop 0.3 mm short of the plate's back, so a wall plate always sits flat. They also stay clear of the cable groove. Switch them off under *All settings → Lamp dimensions* (expert options) to get plain butt joints.
@@ -49,7 +56,7 @@ The studio opens in **guided mode**: six steps, each showing only the controls i
    * **Automatic** mode picks alpha, background-colour distance or luminance segmentation.
    * **Manual** mode exposes threshold, contrast, background removal, noise/hole filtering, smoothing and crop.
    * SVGs can use their **exact vector paths**: transforms, `<use>`, CSS classes and fill rules are honoured, and light fills painted over dark ones cut holes.
-4. **Customise**: shadow size; which sides project (table) or the wall plate decoration (wall). Under *All settings*: lamp dimensions, projection style, target wall, offset, rotation and mirror, LED position, emitter, flux and holder. The geometry rebuilds automatically in a worker after every change.
+4. **Customise**: shadow size; **position**: drag the figure on a small picture of the wall (or use the ← ↑ ↓ → buttons / arrow keys, ⌖ to re-centre); which sides project (table) or the wall plate decoration (wall). Under *All settings*: lamp dimensions, projection style, target wall, offset, rotation and mirror, LED position, emitter, flux and holder. The geometry rebuilds automatically in a worker after every change.
 5. **Preview**: assembled, exploded, internal and panel-by-panel views, plus the **shadow simulation**. The simulation is a room lit through the actual mesh. You can toggle the LED, change intensity, emitter size, wall distance and orientation, move the light, rotate the lamp, and show light rays.
 6. **Export**: print tips and a one-click ZIP. *Review parts & checks* shows the validation report is shown first. Then download individual STLs (`Front_Panel`, `Back_Panel`, `Left_Panel`, `Right_Panel`, `Base_Plate`, `LED_Holder`, `Top_Cover`) in print-ready orientation, `Assembled_Model.stl`, an assembly reference PNG, or a ZIP of everything with a build report and `design.json`.
 

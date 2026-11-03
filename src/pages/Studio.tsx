@@ -54,7 +54,9 @@ export function Studio() {
   }, []);
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col overflow-hidden">
+      {/* clip, not hidden: a closed drawer sits off-screen, and an overflow-hidden box can
+          still be scrolled programmatically (focus / scrollIntoView), shifting the whole UI */}
+      <div className="flex h-full flex-col overflow-clip">
         <TopBar />
         <div className="relative flex min-h-0 flex-1">
           <LeftSidebar />

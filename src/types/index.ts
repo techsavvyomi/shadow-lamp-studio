@@ -384,5 +384,7 @@ export interface LampGeometryResult {
   light: Vec3;
   /** Wall lamps: the wall plate and its decoration, for 2D previews. */
   plate: PlateDrawing | null;
+  /** Silhouette offset (projection.offsetU / offsetV) this geometry was built for. */
+  offset: Vec2;
   timings: Record<string, number>;
 }

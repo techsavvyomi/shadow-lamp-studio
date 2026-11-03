@@ -293,7 +293,7 @@ export async function buildLamp(
       tick('validation', t0);
     }
     progress('Done', 1);
-    return { mounting: mounting.type, figure, parts, panels, drawings, validation, findings, light, plate, timings };
+    return { mounting: mounting.type, figure, parts, panels, drawings, validation, findings, light, plate, offset: [design.projection.offsetU, design.projection.offsetV], timings };
   } finally {
     scope.dispose();
   }

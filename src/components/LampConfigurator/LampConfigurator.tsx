@@ -9,6 +9,7 @@ import { useDesignStore } from '@/stores/designStore';
 import { useGeometryStore } from '@/stores/geometryStore';
 import { PANEL_IDS, type LampDimensions, type LightConfig, type PanelId, type ProjectionConfig } from '@/types';
 import { cn } from '@/utils';
+import { PlacementPad } from './PlacementPad';
 
 const upLamp = (patch: Partial<LampDimensions>) => useDesignStore.getState().update('lamp', patch);
 const upProj = (patch: Partial<ProjectionConfig>) => useDesignStore.getState().update('projection', patch);
@@ -141,8 +142,13 @@ export function ProjectionPanel() {
       <SubHeading>Silhouette placement</SubHeading>
       {wall && <p className="-mt-1 text-[10.5px] leading-snug text-ink-400">The lamp sits at the deepest point of the figure; offsets move the figure around the lamp.</p>}
       <NumberField label="Size (of max feasible)" value={Math.round(p.fill * 100)} min={10} max={100} unit="%" onChange={(v) => upProj({ fill: v / 100 })} />
-      <NumberField label="Offset right" value={p.offsetU} min={-1500} max={1500} step={5} unit="mm" onChange={(offsetU) => upProj({ offsetU })} />
-      <NumberField label="Offset up" value={p.offsetV} min={-1500} max={1500} step={5} unit="mm" onChange={(offsetV) => upProj({ offsetV })} />
+      <PlacementPad />
+      <ExpertOnly>
+        <div className="grid grid-cols-2 gap-2">
+          <NumberField label="Offset right" value={p.offsetU} min={-1500} max={1500} step={1} unit="mm" onChange={(offsetU) => upProj({ offsetU })} />
+          <NumberField label="Offset up" value={p.offsetV} min={-1500} max={1500} step={1} unit="mm" onChange={(offsetV) => upProj({ offsetV })} />
+        </div>
+      </ExpertOnly>
       <NumberField label="Rotation" value={p.rotation} min={-180} max={180} unit="°" onChange={(rotation) => upProj({ rotation })} />
       <ToggleField label="Mirror" checked={p.mirror} onChange={(mirror) => upProj({ mirror })} />
 

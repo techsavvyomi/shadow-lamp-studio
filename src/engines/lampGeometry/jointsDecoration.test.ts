@@ -173,3 +173,46 @@ describe('wall plate decoration (raised relief)', () => {
     [deco, area, outside].forEach((x) => x.delete());
   });
 });
+
+describe('moving the silhouette re-designs the lamp so the shadow still matches', () => {
+  const centroid = (loops: [number, number][][]) => {
+    const pts = loops.flat();
+    return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
+  };
+
+  it('table lamp: the figure moves with the offset, the panels change, the shadow still matches', async () => {
+    const base = await buildLamp(wasm, silhouetteFromParts(cat(), 400, 400), { ...DEFAULT_DESIGN, projection: { ...DEFAULT_DESIGN.projection, fill: 0.6 } });
+    for (const [du, dv] of [
+      [60, 0],
+      [-40, 50],
+    ]) {
+      const moved = await buildLamp(wasm, silhouetteFromParts(cat(), 400, 400), {
+        ...DEFAULT_DESIGN,
+        projection: { ...DEFAULT_DESIGN.projection, fill: 0.6, offsetU: du, offsetV: dv },
+      });
+      expectValid(moved);
+      expect(moved.offset).toEqual([du, dv]);
+      const a = centroid(base.panels.front.placement!.target);
+      const b = centroid(moved.panels.front.placement!.target);
+      expect(b[0] - a[0]).toBeCloseTo(du, 0);
+      expect(b[1] - a[1]).toBeCloseTo(dv, 0);
+      // new cut-outs, and the cast shadow is still the silhouette
+      expect(moved.drawings.front.holesInner).not.toEqual(base.drawings.front.holesInner);
+      for (const id of PANEL_IDS) expect(moved.panels[id].fidelity!, `${id} at (${du}, ${dv})`).toBeGreaterThan(0.95);
+    }
+  });
+
+  it('wall lamp: the side walls are re-cut for the new spot and the shadow still matches', async () => {
+    const plain = await buildLamp(wasm, silhouetteFromParts(cat(), 400, 400), wallDesign());
+    const moved = await buildLamp(wasm, silhouetteFromParts(cat(), 400, 400), { ...wallDesign(), projection: { ...wallDesign().projection, offsetU: 40, offsetV: -30 } });
+    expectValid(moved);
+    expect(moved.figure!.fidelity!).toBeGreaterThan(0.93);
+    const vol = (r: LampGeometryResult, id: string) => {
+      const m = toManifold(part(r, id).mesh);
+      const v = m.volume();
+      m.delete();
+      return v;
+    };
+    expect(Math.abs(vol(moved, 'left') - vol(plain, 'left'))).toBeGreaterThan(10);
+  });
+});

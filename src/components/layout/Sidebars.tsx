@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ArrowLeft, Box, Frame, ImageUp, Lightbulb, PanelTop, Printer, Scan, ScanSearch, Share, Sun } from 'lucide-react';
 import { GuidePanel } from '@/components/Guide/GuidePanel';
 import { DecorationPanel } from '@/components/LampConfigurator/DecorationPanel';
@@ -17,11 +18,17 @@ import { useViewStore, type LeftSection, type RightTab } from '@/stores/viewStor
 import { cn } from '@/utils';
 
 function Drawer({ side, open, tour, children }: { side: 'left' | 'right'; open: boolean; tour?: string; children: React.ReactNode }) {
+  // a closed drawer must not take focus (Tab would land on invisible controls)
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.inert = !open;
+  }, [open]);
   const close = () => (side === 'left' ? useViewStore.getState().setLeftOpen(false) : useViewStore.getState().setRightOpen(false));
   return (
     <>
       {open && <div className="fixed inset-0 top-12 z-20 bg-black/50 lg:hidden" onClick={close} />}
       <aside
+        ref={ref}
         className={cn(
           'panel-surface z-30 flex min-h-0 shrink-0 flex-col border-ink-700 transition-[transform,margin] duration-200',
           side === 'left' ? 'w-[320px] border-r' : 'w-[348px] border-l',

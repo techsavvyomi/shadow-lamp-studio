@@ -52,6 +52,20 @@ await next();
 await next();
 check(await page.getByText('Sides that show the picture').isVisible(), 'customise step shows the essentials');
 
+// drag the figure on the placement pad: the panels are re-designed and the shadow still matches
+const pad = page.locator('[data-testid="placement-pad"]');
+const box = await pad.boundingBox();
+await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+await page.mouse.down();
+for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + box.width / 2 + i * 5, box.y + box.height / 2 - i * 3);
+await page.mouse.up();
+await page.waitForTimeout(800);
+await page.getByText(/all meshes valid/).waitFor({ timeout: 30_000 });
+const movedStatus = await page.getByText(/projection panels · fidelity/).innerText();
+const moved = parseFloat(movedStatus.match(/fidelity\s+([\d.]+)%/)?.[1] ?? '0');
+check(!(await page.getByText('centred').first().isVisible()), 'dragging the pad moves the figure');
+check(moved > 95, `shadow still matches after moving the figure: ${moved}% > 95%`);
+
 // every view is available under All settings
 await page.getByRole('button', { name: /All settings/ }).click();
 for (const mode of ['Exploded', 'Internal', 'Panels', 'Shadow sim']) {

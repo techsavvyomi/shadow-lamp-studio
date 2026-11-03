@@ -4,6 +4,7 @@ import { NumberField, Stat, SubHeading } from '@/components/common/Fields';
 import { ImageUploader } from '@/components/ImageUploader/ImageUploader';
 import { DecorationPanel } from '@/components/LampConfigurator/DecorationPanel';
 import { MountingPanel } from '@/components/LampConfigurator/MountingPanel';
+import { PlacementPad } from '@/components/LampConfigurator/PlacementPad';
 import { SilhouetteEditor } from '@/components/SilhouetteEditor/SilhouetteEditor';
 import { downloadZip } from '@/components/ExportPanel/exportActions';
 import { Button, Progress } from '@/components/ui/primitives';
@@ -57,6 +58,8 @@ function CustomiseStep() {
         onChange={(v) => upProj({ fill: v / 100 }, 'projection:fill')}
         help={wall ? 'How much of the area the lamp can shade the figure fills. Smaller figures are sharper.' : 'How much of each wall the lamp can reach the picture fills.'}
       />
+      <SubHeading>Position on the wall</SubHeading>
+      <PlacementPad />
       {!wall && (
         <div className="space-y-1.5">
           <div className="text-[11.5px] font-medium text-ink-300">Sides that show the picture</div>
@@ -137,6 +140,7 @@ function PreviewStep() {
           How it fits
         </ViewButton>
       </div>
+      <PlacementPad height={150} />
       {status === 'running' && (
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-[11.5px] text-ink-300">
