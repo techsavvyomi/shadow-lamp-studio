@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 200">
+  <!-- Crescent moon (a white disc painted over a black disc) and disconnected stars -->
+  <circle cx="88" cy="108" r="74" fill="#000"/>
+  <circle cx="124" cy="88" r="64" fill="#fff"/>
+  <polygon fill="#000" points="168,22 174,38 191,38 177,48 182,64 168,54 154,64 159,48 145,38 162,38"/>
+  <polygon fill="#000" points="190,104 194,114 205,114 196,120 199,131 190,124 181,131 184,120 175,114 186,114"/>
+  <circle cx="150" cy="168" r="6" fill="#000"/>
+  <circle cx="200" cy="168" r="4" fill="#000"/>
+</svg>

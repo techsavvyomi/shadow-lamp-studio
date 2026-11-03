@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">
+  <!-- Figure with a raised arm -->
+  <circle cx="100" cy="34" r="20" fill="#111"/>
+  <path fill="#111" d="M84 62 Q100 55 116 62 L152 20 L163 29 L126 78 L124 128 L152 198 L172 244 L151 252 L119 180 L100 150 L82 180 L52 251 L31 244 L58 198 L77 128 L76 84 L40 112 L31 101 Z"/>
+</svg>

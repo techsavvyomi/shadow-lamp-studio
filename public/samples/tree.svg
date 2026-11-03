@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250">
+  <!-- Pine tree with cut-out ornaments (holes) and a separate star -->
+  <polygon fill="#0b0b0b" points="100,28 148,92 124,92 164,148 132,148 180,214 20,214 68,148 36,148 76,92 52,92"/>
+  <rect fill="#0b0b0b" x="88" y="212" width="24" height="32"/>
+  <polygon fill="#0b0b0b" points="100,2 104,13 116,13 106,20 110,31 100,24 90,31 94,20 84,13 96,13"/>
+  <circle cx="100" cy="80" r="7" fill="#fff"/>
+  <circle cx="82" cy="128" r="7" fill="#fff"/>
+  <circle cx="120" cy="136" r="7" fill="#fff"/>
+  <circle cx="70" cy="188" r="7" fill="#fff"/>
+  <circle cx="104" cy="182" r="7" fill="#fff"/>
+  <circle cx="138" cy="192" r="7" fill="#fff"/>
+</svg>
